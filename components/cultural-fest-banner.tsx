@@ -7,7 +7,6 @@ import Image from "next/image"
 
 export default function CulturalFestBanner() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
-  const [rawMousePos, setRawMousePos] = useState({ x: 0, y: 0 })
   const [activeVinyl, setActiveVinyl] = useState<number | null>(null)
   const [isPlaying, setIsPlaying] = useState([false, false, false])
   const [ripples, setRipples] = useState<{ x: number; y: number; id: number }[]>([])
@@ -24,8 +23,6 @@ export default function CulturalFestBanner() {
   const containerRef = useRef<HTMLDivElement>(null)
   const rippleIdRef = useRef(0)
   const confettiIdRef = useRef(0)
-  const trailIdRef = useRef(0)
-  const [cursorTrail, setCursorTrail] = useState<{ x: number; y: number; id: number }[]>([])
 
   // Mouse tracking with parallax
   useEffect(() => {
@@ -40,9 +37,6 @@ export default function CulturalFestBanner() {
           y: (e.clientY - rect.top - rect.height / 2) / 30,
         })
         
-        // Add cursor trail
-        const newTrail = { x, y, id: trailIdRef.current++ }
-        setCursorTrail(prev => [...prev.slice(-15), newTrail])
       }
     }
     window.addEventListener("mousemove", handleMouseMove)
@@ -162,7 +156,7 @@ export default function CulturalFestBanner() {
       ref={containerRef}
       onClick={createRipple}
       onDoubleClick={handleDoubleClick}
-      className={`relative w-full max-w-[1440px] h-[900px] mx-auto overflow-hidden select-none cursor-none ${glitchEffect ? "animate-glitch" : ""}`}
+      className={`relative w-full max-w-[1440px] h-[900px] mx-auto overflow-hidden select-none ${glitchEffect ? "animate-glitch" : ""}`}
     >
       {/* Custom Cursor with trail */}
       <div 
