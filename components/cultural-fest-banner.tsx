@@ -7,6 +7,7 @@ import Image from "next/image"
 
 export default function CulturalFestBanner() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
+  const [rawMousePos, setRawMousePos] = useState({ x: 0, y: 0 })
   const [activeVinyl, setActiveVinyl] = useState<number | null>(null)
   const [isPlaying, setIsPlaying] = useState([false, false, false])
   const [ripples, setRipples] = useState<{ x: number; y: number; id: number }[]>([])
@@ -23,6 +24,8 @@ export default function CulturalFestBanner() {
   const containerRef = useRef<HTMLDivElement>(null)
   const rippleIdRef = useRef(0)
   const confettiIdRef = useRef(0)
+  const trailIdRef = useRef(0)
+  const [cursorTrail, setCursorTrail] = useState<{ x: number; y: number; id: number }[]>([])
 
   // Mouse tracking with parallax
   useEffect(() => {
@@ -36,7 +39,10 @@ export default function CulturalFestBanner() {
           x: (e.clientX - rect.left - rect.width / 2) / 30,
           y: (e.clientY - rect.top - rect.height / 2) / 30,
         })
-        
+
+        // Add cursor trail
+        const newTrail = { x, y, id: trailIdRef.current++ }
+        setCursorTrail(prev => [...prev.slice(-15), newTrail])
       }
     }
     window.addEventListener("mousemove", handleMouseMove)
@@ -58,7 +64,7 @@ export default function CulturalFestBanner() {
       const animationInterval = setInterval(animate, 16)
       setTimeout(() => clearInterval(animationInterval), 5000)
     }, 15000)
-    
+
     // Trigger once on mount
     setTimeout(() => {
       setAutoRickshaw({ active: true, x: -200 })
@@ -71,7 +77,7 @@ export default function CulturalFestBanner() {
       const animationInterval = setInterval(animate, 16)
       setTimeout(() => clearInterval(animationInterval), 5000)
     }, 2000)
-    
+
     return () => clearInterval(interval)
   }, [])
 
@@ -101,14 +107,14 @@ export default function CulturalFestBanner() {
     const newRipple = { x, y, id: rippleIdRef.current++ }
     setRipples(prev => [...prev, newRipple])
     setClickCount(prev => prev + 1)
-    
+
     // Fireworks on every 10 clicks
     if ((clickCount + 1) % 10 === 0) {
       setShowFireworks(true)
       launchConfetti(720, 450)
       setTimeout(() => setShowFireworks(false), 2000)
     }
-    
+
     setTimeout(() => {
       setRipples(prev => prev.filter(r => r.id !== newRipple.id))
     }, 1000)
@@ -117,20 +123,20 @@ export default function CulturalFestBanner() {
   // Vinyl interaction
   const togglePlay = (index: number, e: React.MouseEvent) => {
     e.stopPropagation()
-    
+
     // Shake effect
     setShakingVinyl(index)
     setTimeout(() => setShakingVinyl(null), 500)
-    
+
     // Launch confetti from vinyl
     if (!containerRef.current) return
     const rect = containerRef.current.getBoundingClientRect()
     launchConfetti(e.clientX - rect.left, e.clientY - rect.top)
-    
+
     // Glitch effect
     setGlitchEffect(true)
     setTimeout(() => setGlitchEffect(false), 200)
-    
+
     setIsPlaying(prev => {
       const newState = [...prev]
       newState[index] = !newState[index]
@@ -156,37 +162,12 @@ export default function CulturalFestBanner() {
       ref={containerRef}
       onClick={createRipple}
       onDoubleClick={handleDoubleClick}
-      className={`relative w-full max-w-[1440px] h-[900px] mx-auto overflow-hidden select-none ${glitchEffect ? "animate-glitch" : ""}`}
+      className={`relative w-full max-w-[1440px] h-[900px] mx-auto overflow-hidden select-none  ${glitchEffect ? "animate-glitch" : ""}`}
     >
       {/* Custom Cursor with trail */}
-      <div 
-        className="fixed pointer-events-none z-[200] mix-blend-difference"
-        style={{ 
-          left: rawMousePos.x, 
-          top: rawMousePos.y,
-          transform: "translate(-50%, -50%)",
-        }}
-      >
-        <div className="w-8 h-8 rounded-full border-2 border-white animate-pulse" />
-        <div className="absolute top-1/2 left-1/2 w-2 h-2 rounded-full bg-white -translate-x-1/2 -translate-y-1/2" />
-      </div>
-      
-      {/* Cursor Rainbow Trail */}
-      {cursorTrail.map((point, i) => (
-        <div
-          key={point.id}
-          className="fixed pointer-events-none rounded-full z-[190]"
-          style={{
-            left: point.x,
-            top: point.y,
-            width: 6 + i * 0.5,
-            height: 6 + i * 0.5,
-            backgroundColor: `hsl(${(i * 25) % 360}, 100%, 60%)`,
-            opacity: i / cursorTrail.length,
-            transform: "translate(-50%, -50%)",
-          }}
-        />
-      ))}
+     
+
+
 
       {/* Spotlight Effect */}
       {spotlightOn && (
@@ -509,7 +490,7 @@ export default function CulturalFestBanner() {
                   }}
                 >
                   <Image src={celeb.image || "/placeholder.svg"} alt={celeb.name} fill className="object-cover" />
-                  
+
                   {/* Play/Pause overlay */}
                   <div className={`absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center transition-all duration-300 ${hoverIndex === index ? "opacity-100" : "opacity-0"}`}>
                     <div 
@@ -680,7 +661,7 @@ export default function CulturalFestBanner() {
         >
           <p className="text-amber-400 font-black text-2xl tracking-wider group-hover:animate-pulse">23-25 FEB</p>
         </div>
-        
+
         <div className="relative group">
           <div 
             className="absolute -inset-1 rounded-full opacity-75 blur-sm animate-pulse"
@@ -698,7 +679,7 @@ export default function CulturalFestBanner() {
             GET PASSES
           </button>
         </div>
-        
+
         <div 
           className="bg-gradient-to-r from-amber-500 to-amber-600 px-8 py-4 rounded-full shadow-2xl hover:scale-110 transition-all duration-300 cursor-pointer hover:shadow-amber-500/50"
           onClick={(e) => { e.stopPropagation(); launchConfetti(720, 850) }}
